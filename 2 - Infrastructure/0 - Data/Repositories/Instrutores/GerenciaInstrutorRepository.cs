@@ -6,7 +6,7 @@ using Domain.Instrutores.Interfaces.Repositories;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 
-namespace Data.Repositories
+namespace Data.Repositories.Instrutores
 {
     public class GerenciaInstrutorRepository : ConnectionBase, IGerenciaInstrutorRepository
     {
@@ -14,9 +14,31 @@ namespace Data.Repositories
         {
         }
 
-        public async Task AdicionarInstrutorAsync(Instrutor instrutor)
+        public async Task<int> GravarInstrutorAsync(Instrutor instrutor)
         {
-            // Implementar lógica para adicionar um instrutor ao banco de dados
+            try
+            {
+                var param = new DynamicParameters();
+                param.Add("Nome", instrutor.Nome, System.Data.DbType.String, System.Data.ParameterDirection.Input);
+                param.Add("Cpf", instrutor.Cpf, System.Data.DbType.String, System.Data.ParameterDirection.Input);
+                param.Add("Email", instrutor.Email, System.Data.DbType.String, System.Data.ParameterDirection.Input);
+                var query = @"
+                            INSERT INTO INSTRUTORES (NOME, CPF, EMAIL)
+                            VALUES (@NOME, @CPF, @EMAIL);
+                            
+                            SELECT CAST(SCOPE_IDENTITY() as int);
+                         ";
+                using (var connection = Connection)
+                {
+                    return await connection.QueryFirstOrDefaultAsync<int>(query, param);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
         }
         public async Task AtualizarInstrutorAsync(Instrutor instrutor)
         {
@@ -32,11 +54,11 @@ namespace Data.Repositories
 
             var query = @"
                               
-                               delete from LocaisAtendimento where InstrutorId = @Id;
+                               DELETE FROM LOCAISATENDIMENTO WHERE INSTRUTORID = @ID;
                                
-                               delete from Telefone where InstrutorId = @Id;
+                               DELETE FROM TELEFONE WHERE INSTRUTORID = @ID;
 
-                               DELETE FROM Instrutores WHERE Id = @Id;
+                               DELETE FROM INSTRUTORES WHERE ID = @ID;
                      
                               ";
 

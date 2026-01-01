@@ -4,22 +4,18 @@ namespace Domain.Instrutores
 {
     public class Telefone
     {
-        public Guid IdInstrutor { get; private set; }
-        public Guid? IdTelefone { get; private set; }
+        public int IdInstrutor { get; private set; }
+        public int? IdTelefone { get; private set; }
         public string DDD { get; private set; } 
         public string NumeroTelefone { get; private set; }
-
         public string TipoTelefone { get; private set; }
-        public Telefone(string ddd,string numero, string tipoTelefone, Guid idInstrutor, Guid? idTelefone = null)
+        public Telefone(string ddd,string numero, string tipoTelefone, int idInstrutor)
         {
             NumeroTelefone = numero;
             DDD = ddd;
             IdInstrutor = idInstrutor;
-            IdTelefone = idTelefone;
+//            IdTelefone = idTelefone;
             TipoTelefone = tipoTelefone;
-
-            if (idTelefone == null)
-                IdTelefone = Guid.Empty;
 
             TelefoneValidator();
         }
