@@ -1,5 +1,8 @@
-﻿using Application.Instrutores.Interfaces;
+﻿using Application.Instrutores.InputModels;
+using Application.Instrutores.Interfaces;
 using Application.Instrutores.ViewModels;
+using Domain.Instrutores;
+using Domain.Instrutores.Interfaces.Repositories;
 using Domain.Instrutores.Interfaces.Services;
 using Notification;
 using Serilog;
@@ -9,26 +12,56 @@ namespace Application.Instrutores
 {
     public class InstrutoresApplication : Notifiable, IInstrutoresApplication
     {
-        private readonly IInstrutoresApplication _instrutoresApplication;
+        //private readonly IInstrutoresApplication _instrutoresApplication;
         private readonly IGerenciaInstrutorService _gerenciaInstrutorService;
         private readonly IBuscaInstrutorRepository _buscaInstrutorRepository;
+        private readonly IGerenciaLocaisAtendimentoRepository _gerenciaLocaisAtendimentoRepository;
+        private readonly IGerenciaTelefonesRepository _gerenciaTelefonesRepository;
 
-        public InstrutoresApplication(IInstrutoresApplication instrutoresApplication, IGerenciaInstrutorService gerenciaInstrutorService)
+        public InstrutoresApplication(IGerenciaInstrutorService gerenciaInstrutorService,
+            IGerenciaTelefonesRepository gerenciaTelefonesRepository,
+            IGerenciaLocaisAtendimentoRepository gerenciaLocaisAtendimentoRepository)
         {
-            _instrutoresApplication = instrutoresApplication;
             _gerenciaInstrutorService = gerenciaInstrutorService;
+            _gerenciaTelefonesRepository = gerenciaTelefonesRepository;
+            _gerenciaLocaisAtendimentoRepository = gerenciaLocaisAtendimentoRepository;
         }
 
-        public async Task AdicionarInstrutorAsync(/* Parâmetros necessários */)
+        public async Task AdicionarInstrutorAsync(InstrutorInputModel instrutor)
         {
             try
             {
-                // Lógica para adicionar um instrutor
+                if(await ObterInstrutorCpfEmail(instrutor.Cpf, instrutor.Email))
+                {
+                    Log.Warning($"Tentativa de adicionar instrutor com CPF ou Email já existente: {instrutor.Cpf}, {instrutor.Email}");
+                    AddNotification("Duplicado", "Já existe um instrutor cadastrado com este CPF ou Email.");
+                    return;
+                }
+
+                Log.Information("Validando domínios (telefone, locais de atendimento e instrutor");
+                var _telefone = new Telefone(instrutor.Telefone.DDD, instrutor.Telefone.NumeroTelefone, instrutor.Telefone.TipoTelefone);
+
+                var _locaisAtendimento = new LocaisAtendimento(instrutor.LocaisAtendimento.Estado, instrutor.LocaisAtendimento.Cidade,
+                    instrutor.LocaisAtendimento.Bairro);
+
+                var _instrutor = new Instrutor(instrutor.Nome, instrutor.Cpf, instrutor.Email, _telefone, _locaisAtendimento);
+
+                if(_telefone.HasInvalidNotification || _locaisAtendimento.HasInvalidNotification || _instrutor.HasInvalidNotification)
+                {
+                    Log.Warning("Instrutor não válido para prosseguir com o cadastro");
+                    return;
+                }
+
+                Log.Information("Validações de domínios (telefone, locais de atendimento e instrutor");
+                Log.Information($"Iniciando adição de instrutor: {instrutor.Nome}");
+                await _gerenciaInstrutorService.Gravar(_instrutor);
+               
+
             }
             catch (Exception ex)
             {
                 Log.Error("Erro ao adicionar instrutor: {Mensagem}", ex.Message);
-                this.AddNotification("Erro", "Ocorreu um erro ao adicionar o instrutor.");
+                AddNotification("Erro", "Ocorreu um erro ao adicionar o instrutor.");
             }
         }
 
@@ -60,9 +93,15 @@ namespace Application.Instrutores
 
         public async Task<IEnumerable<InstrutorViewModel>> ObterInstrutorPorIdAsync(string id)
         {
-            
+            Log.Information($"Buscando instrutor pelo ID: {id}");
             return await _buscaInstrutorRepository.ObterInstrutorPorIdAsync(id);
             
+        }
+
+        public async Task<bool> ObterInstrutorCpfEmail (string cpf, string email)
+        {
+            Log.Information("Verificando existência de instrutor com CPF: {Cpf} e Email: {Email}", cpf, email);
+            return await _buscaInstrutorRepository.ObterInstrutorCpfEmail(cpf, email);
         }
     }
 }

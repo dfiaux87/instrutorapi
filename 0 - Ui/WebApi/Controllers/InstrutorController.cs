@@ -1,49 +1,48 @@
-﻿using Application.Instrutores.Interfaces;
+﻿using Application.Instrutores.InputModels;
+using Application.Instrutores.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 using Notification;
 
 namespace WebApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("v1/[controller]")]
     [ApiController]
     public class InstrutorController : ControllerBase
     {
-        private readonly IInstrutoresApplication  _instrutorAplication;
 
+        private readonly IInstrutoresApplication _instrutoresApplication;
+        
         public InstrutorController(IInstrutoresApplication instrutorAplication)
         {
-            _instrutorAplication = instrutorAplication;
-        }
-        // GET: api/<InstrutorController>
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
+            _instrutoresApplication = instrutorAplication;
         }
 
-        // GET api/<InstrutorController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
-        // POST api/<InstrutorController>
         [HttpPost]
-        public void Post([FromBody]string value)
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [ProducesResponseType(typeof(IEnumerable<Notifiable>), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> AdicionarInstrutor([FromBody] InstrutorInputModel instrutor)
         {
+            try
+            {
+                if (instrutor == null)
+                {
+                    Log.Error("InstrutorInputModel recebido é nulo.");
+                    return UnprocessableEntity("O corpo da requisição não pode ser nulo.");
+                }
+                
+                await _instrutoresApplication.AdicionarInstrutorAsync(instrutor);
+
+               
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Erro ao processar a requisição de adicionar instrutor: {Mensagem}", ex?.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex);
+            }
         }
 
-        // PUT api/<InstrutorController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/<InstrutorController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }

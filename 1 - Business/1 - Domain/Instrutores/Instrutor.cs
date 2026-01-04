@@ -2,7 +2,7 @@
 
 namespace Domain.Instrutores
 {
-    public class Instrutor
+    public class Instrutor: Notifiable
     {
         public int? Id { get; private set; }
         public string Nome { get; private set; }

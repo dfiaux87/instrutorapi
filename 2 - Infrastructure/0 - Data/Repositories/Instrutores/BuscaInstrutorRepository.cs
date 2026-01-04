@@ -40,5 +40,23 @@ namespace Data.Repositories.Instrutores
                   
             }   
         }
+
+        public async Task<bool> ObterInstrutorCpfEmail(string cpf, string email)
+        {
+            var param = new DynamicParameters();
+            param.Add("Cpf", cpf, System.Data.DbType.String, System.Data.ParameterDirection.Input);
+            param.Add("Email", email, System.Data.DbType.String, System.Data.ParameterDirection.Input);
+
+            var sql = @"
+                        SELECT COUNT(1)
+                        FROM INSTRUTORES
+                        WHERE Cpf = @Cpf OR Email = @Email
+                    ";
+            using (var connection = Connection)
+            {
+                var count = await connection.ExecuteScalarAsync<int>(sql, param);
+                return count > 0 ? true : false;
+            }
+        }
     }
 }

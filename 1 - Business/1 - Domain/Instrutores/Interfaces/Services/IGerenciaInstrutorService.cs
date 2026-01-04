@@ -2,5 +2,6 @@
 {
     public interface IGerenciaInstrutorService
     {
+        Task Gravar(Instrutor instrutor);
     }
 }

@@ -2,19 +2,19 @@
 
 namespace Domain.Instrutores
 {
-    public class Telefone
+    public class Telefone: Notifiable
     {
-        public int IdInstrutor { get; private set; }
+        public int? IdInstrutor { get; private set; }
         public int? IdTelefone { get; private set; }
         public string DDD { get; private set; } 
         public string NumeroTelefone { get; private set; }
         public string TipoTelefone { get; private set; }
-        public Telefone(string ddd,string numero, string tipoTelefone, int idInstrutor)
+        public Telefone(string ddd,string numero, string tipoTelefone, int? idInstrutor = null, int? idTelefone = null)
         {
             NumeroTelefone = numero;
             DDD = ddd;
             IdInstrutor = idInstrutor;
-//            IdTelefone = idTelefone;
+            IdTelefone = idTelefone;
             TipoTelefone = tipoTelefone;
 
             TelefoneValidator();
