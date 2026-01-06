@@ -8,7 +8,7 @@ namespace Application.Instrutores.InputModels
         public string Nome { get; set; }
         public string Cpf { get; set; }
         public string Email { get; set; }
-        public Telefone Telefone { get; set; }
-        public LocaisAtendimento LocaisAtendimento { get; set; }
+        public TelefoneInputModel Telefone { get; set; }
+        public LocaisAtendimentoInputModel LocaisAtendimento { get; set; }
     }
 }

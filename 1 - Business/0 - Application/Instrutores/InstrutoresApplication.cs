@@ -42,8 +42,8 @@ namespace Application.Instrutores
                 Log.Information("Validando domínios (telefone, locais de atendimento e instrutor");
                 var _telefone = new Telefone(instrutor.Telefone.DDD, instrutor.Telefone.NumeroTelefone, instrutor.Telefone.TipoTelefone);
 
-                var _locaisAtendimento = new LocaisAtendimento(instrutor.LocaisAtendimento.Estado, instrutor.LocaisAtendimento.Cidade,
-                    instrutor.LocaisAtendimento.Bairro);
+                var _locaisAtendimento = new LocaisAtendimento(instrutor.LocaisAtendimento.UF, instrutor.LocaisAtendimento.Estado, 
+                                                               instrutor.LocaisAtendimento.Cidade, instrutor.LocaisAtendimento.Bairro);
 
                 var _email = new Email(instrutor.Email);
                 if(_email.HasInvalidNotification)

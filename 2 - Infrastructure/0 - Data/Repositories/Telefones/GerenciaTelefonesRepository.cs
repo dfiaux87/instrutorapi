@@ -57,8 +57,8 @@ namespace Data.Repositories.Telefones
                       update Telefone 
                          set DDD = @DDD,
                              NUMEROTELEFONE = @NumeroTelefone,
-                             TIPOTELEFONE = @TipoTelefone
-                       where IdTelefone = @IdTelefone 
+                             TIPOTELEFONE   = @TipoTelefone
+                       where IdTelefone  = @IdTelefone 
                          and IdInstrutor = @IdInstrutor;
                ";
 

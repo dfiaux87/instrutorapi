@@ -3,12 +3,6 @@ using Data.Connections;
 using Domain.Instrutores;
 using Domain.Instrutores.Interfaces.Repositories;
 using Microsoft.Extensions.Configuration;
-using Notification;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Data.Repositories.LocaisAtendimento
 {
@@ -33,6 +27,36 @@ namespace Data.Repositories.LocaisAtendimento
                             VALUES (@InstrutorId, @Bairro, @Cidade, @Estado);
                          ";
 
+                using (var connection = Connection)
+                {
+                    await connection.ExecuteAsync(sql, param);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public async Task AtualizarLocaisAtendimentoAsync(Instrutor instrutor, int idLocalAtendimento, int idInstrutor)
+        {
+            try
+            {
+                var param = new DynamicParameters();
+                param.Add("IdLocalAtendimento", idLocalAtendimento, System.Data.DbType.Int32, System.Data.ParameterDirection.Input);
+                param.Add("IdInstrutor", idInstrutor, System.Data.DbType.Int32, System.Data.ParameterDirection.Input);
+                param.Add("Bairro", instrutor.LocaisAtendimento.Bairro, System.Data.DbType.String, System.Data.ParameterDirection.Input);
+                param.Add("Cidade", instrutor.LocaisAtendimento.Cidade, System.Data.DbType.String, System.Data.ParameterDirection.Input);
+                param.Add("Estado", instrutor.LocaisAtendimento.Estado, System.Data.DbType.String, System.Data.ParameterDirection.Input);
+
+                var sql = @"
+                        UPDATE LocalAtendimento
+                           SET BAIRRO = @Bairro,
+                               CIDADE = @Cidade,
+                               ESTADO = @Estado
+                         WHERE IdInstrutor = @IdLocalAtendimento 
+                           AND IdInstrutor = @IdInstrutor;
+                      ";
                 using (var connection = Connection)
                 {
                     await connection.ExecuteAsync(sql, param);
