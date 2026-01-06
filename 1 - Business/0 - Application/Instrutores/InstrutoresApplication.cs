@@ -4,6 +4,7 @@ using Application.Instrutores.ViewModels;
 using Domain.Instrutores;
 using Domain.Instrutores.Interfaces.Repositories;
 using Domain.Instrutores.Interfaces.Services;
+using Domain.ValueObjects;
 using Notification;
 using Serilog;
 
@@ -44,7 +45,15 @@ namespace Application.Instrutores
                 var _locaisAtendimento = new LocaisAtendimento(instrutor.LocaisAtendimento.Estado, instrutor.LocaisAtendimento.Cidade,
                     instrutor.LocaisAtendimento.Bairro);
 
-                var _instrutor = new Instrutor(instrutor.Nome, instrutor.Cpf, instrutor.Email, _telefone, _locaisAtendimento);
+                var _email = new Email(instrutor.Email);
+                if(_email.HasInvalidNotification)
+                    return;
+                
+                var _documento = new Documento(instrutor.Cpf);
+                if(_documento.HasInvalidNotification)
+                    return;
+
+                var _instrutor = new Instrutor(instrutor.Nome, _documento, _email, _telefone, _locaisAtendimento);
 
                 if(_telefone.HasInvalidNotification || _locaisAtendimento.HasInvalidNotification || _instrutor.HasInvalidNotification)
                 {

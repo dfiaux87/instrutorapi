@@ -1,4 +1,5 @@
-﻿using Data.Connections;
+﻿using Dapper;
+using Data.Connections;
 using Domain.Instrutores;
 using Domain.Instrutores.Interfaces.Repositories;
 using Microsoft.Extensions.Configuration;
@@ -19,7 +20,28 @@ namespace Data.Repositories.LocaisAtendimento
 
         public async Task GravarLocaisAtendimentoAsync(Instrutor instrutores, int idInstrutor)
         {
-            // Implementar lógica para gravar os locais de atendimento no banco de dados
+            try
+            {
+                var param = new DynamicParameters();
+                param.Add("InstrutorId", idInstrutor, System.Data.DbType.Int32, System.Data.ParameterDirection.Input);
+                param.Add("Bairro", instrutores.LocaisAtendimento.Bairro, System.Data.DbType.String, System.Data.ParameterDirection.Input);
+                param.Add("Cidade", instrutores.LocaisAtendimento.Cidade, System.Data.DbType.String, System.Data.ParameterDirection.Input);
+                param.Add("Estado", instrutores.LocaisAtendimento.Estado, System.Data.DbType.String, System.Data.ParameterDirection.Input);
+
+                var sql = @"
+                            INSERT INTO LocalAtendimento (IdInstrutor, BAIRRO, CIDADE, ESTADO)
+                            VALUES (@InstrutorId, @Bairro, @Cidade, @Estado);
+                         ";
+
+                using (var connection = Connection)
+                {
+                    await connection.ExecuteAsync(sql, param);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
     }
 }

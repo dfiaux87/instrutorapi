@@ -12,13 +12,15 @@ namespace WebApi.Controllers
     {
 
         private readonly IInstrutoresApplication _instrutoresApplication;
-        
-        public InstrutorController(IInstrutoresApplication instrutorAplication)
+        private readonly ILogger<InstrutorController> _logger;
+
+        public InstrutorController(IInstrutoresApplication instrutorAplication, ILogger<InstrutorController> logger)
         {
             _instrutoresApplication = instrutorAplication;
+            _logger = logger;
         }
 
-        [HttpPost]
+        [HttpPost("grava-instrutor")]
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(typeof(IEnumerable<Notifiable>), StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -33,9 +35,9 @@ namespace WebApi.Controllers
                 }
                 
                 await _instrutoresApplication.AdicionarInstrutorAsync(instrutor);
-
+                return GlobalNotifications.Instance.ToActionResult(_logger, Created());
                
-                return Ok();
+               //return Ok();
             }
             catch (Exception ex)
             {
