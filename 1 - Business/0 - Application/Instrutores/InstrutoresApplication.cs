@@ -5,6 +5,7 @@ using Domain.Instrutores;
 using Domain.Instrutores.Interfaces.Repositories;
 using Domain.Instrutores.Interfaces.Services;
 using Domain.ValueObjects;
+using Microsoft.Extensions.Logging;
 using Notification;
 using Serilog;
 
@@ -18,14 +19,17 @@ namespace Application.Instrutores
         private readonly IBuscaInstrutorRepository _buscaInstrutorRepository;
         private readonly IGerenciaLocaisAtendimentoRepository _gerenciaLocaisAtendimentoRepository;
         private readonly IGerenciaTelefonesRepository _gerenciaTelefonesRepository;
+        private ILogger<InstrutoresApplication> _logger;
 
         public InstrutoresApplication(IGerenciaInstrutorService gerenciaInstrutorService,
             IGerenciaTelefonesRepository gerenciaTelefonesRepository,
-            IGerenciaLocaisAtendimentoRepository gerenciaLocaisAtendimentoRepository)
+            IGerenciaLocaisAtendimentoRepository gerenciaLocaisAtendimentoRepository,
+            ILogger<InstrutoresApplication> logger)
         {
             _gerenciaInstrutorService = gerenciaInstrutorService;
             _gerenciaTelefonesRepository = gerenciaTelefonesRepository;
             _gerenciaLocaisAtendimentoRepository = gerenciaLocaisAtendimentoRepository;
+            _logger = logger;
         }
 
         public async Task AdicionarInstrutorAsync(InstrutorInputModel instrutor)
@@ -34,12 +38,12 @@ namespace Application.Instrutores
             {
                 if(await ObterInstrutorCpfEmail(instrutor.Cpf, instrutor.Email))
                 {
-                    Log.Warning($"Tentativa de adicionar instrutor com CPF ou Email já existente: {instrutor.Cpf}, {instrutor.Email}");
+                    _logger.LogWarning($"Tentativa de adicionar instrutor com CPF ou Email já existente: {instrutor.Cpf}, {instrutor.Email}");
                     AddNotification("Duplicado", "Já existe um instrutor cadastrado com este CPF ou Email.");
                     return;
                 }
 
-                Log.Information("Validando domínios (telefone, locais de atendimento e instrutor");
+                _logger.LogInformation("Validando domínios (telefone, locais de atendimento e instrutor");
                 var _telefone = new Telefone(instrutor.Telefone.DDD, instrutor.Telefone.NumeroTelefone, instrutor.Telefone.TipoTelefone);
 
                 var _locaisAtendimento = new LocaisAtendimento(instrutor.LocaisAtendimento.UF, instrutor.LocaisAtendimento.Estado, 
@@ -57,19 +61,19 @@ namespace Application.Instrutores
 
                 if(_telefone.HasInvalidNotification || _locaisAtendimento.HasInvalidNotification || _instrutor.HasInvalidNotification)
                 {
-                    Log.Warning("Instrutor não válido para prosseguir com o cadastro");
+                    _logger.LogWarning("Instrutor não válido para prosseguir com o cadastro");
                     return;
                 }
 
-                Log.Information("Validações de domínios (telefone, locais de atendimento e instrutor");
-                Log.Information($"Iniciando adição de instrutor: {instrutor.Nome}");
+                _logger.LogInformation("Validações de domínios (telefone, locais de atendimento e instrutor");
+                _logger.LogInformation($"Iniciando adição de instrutor: {instrutor.Nome}");
                 await _gerenciaInstrutorService.Gravar(_instrutor);
                
 
             }
             catch (Exception ex)
             {
-                Log.Error("Erro ao adicionar instrutor: {Mensagem}", ex.Message);
+                _logger.LogError("Erro ao adicionar instrutor: {Mensagem}", ex.Message);
                 AddNotification("Erro", "Ocorreu um erro ao adicionar o instrutor.");
             }
         }
@@ -82,7 +86,7 @@ namespace Application.Instrutores
             }
             catch (Exception ex)
             {
-                Log.Error("Erro ao atualizar instrutor: {Mensagem}", ex.Message);
+                _logger.LogError("Erro ao atualizar instrutor: {Mensagem}", ex.Message);
                 this.AddNotification("Erro", "Ocorreu um erro ao atualizar o instrutor.");
             }
         }
@@ -95,21 +99,21 @@ namespace Application.Instrutores
             }
             catch (Exception ex)
             {
-                Log.Error("Erro ao remover instrutor: {Mensagem}", ex.Message);
+                _logger.LogError("Erro ao remover instrutor: {Mensagem}", ex.Message);
                 this.AddNotification("Erro", "Ocorreu um erro ao remover o instrutor.");
             }
         }
 
         public async Task<IEnumerable<InstrutorViewModel>> ObterInstrutorPorIdAsync(string id)
         {
-            Log.Information($"Buscando instrutor pelo ID: {id}");
+            _logger.LogInformation($"Buscando instrutor pelo ID: {id}");
             return await _buscaInstrutorRepository.ObterInstrutorPorIdAsync(id);
             
         }
 
         public async Task<bool> ObterInstrutorCpfEmail (string cpf, string email)
         {
-            Log.Information("Verificando existência de instrutor com CPF: {Cpf} e Email: {Email}", cpf, email);
+            _logger.LogInformation("Verificando existência de instrutor com CPF: {Cpf} e Email: {Email}", cpf, email);
             return await _buscaInstrutorRepository.ObterInstrutorCpfEmail(cpf, email);
         }
     }

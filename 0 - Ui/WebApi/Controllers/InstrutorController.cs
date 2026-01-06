@@ -13,7 +13,7 @@ namespace WebApi.Controllers
 
         private readonly IInstrutoresApplication _instrutoresApplication;
         private readonly ILogger<InstrutorController> _logger;
-
+        
         public InstrutorController(IInstrutoresApplication instrutorAplication, ILogger<InstrutorController> logger)
         {
             _instrutoresApplication = instrutorAplication;
@@ -36,8 +36,6 @@ namespace WebApi.Controllers
                 
                 await _instrutoresApplication.AdicionarInstrutorAsync(instrutor);
                 return GlobalNotifications.Instance.ToActionResult(_logger, Created());
-               
-               //return Ok();
             }
             catch (Exception ex)
             {

@@ -4,15 +4,20 @@ using Data.Connections;
 using Domain.Instrutores;
 using Domain.Instrutores.Interfaces.Repositories;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Serilog;
 
 namespace Data.Repositories.Instrutores
 {
     public class GerenciaInstrutorRepository : ConnectionBase, IGerenciaInstrutorRepository
     {
-        public GerenciaInstrutorRepository(IConfiguration configuration) : base(configuration)
+        public GerenciaInstrutorRepository(IConfiguration configuration, ILogger<GerenciaInstrutorRepository> logger) 
+            : base(configuration)
         {
+            _logger = logger;
         }
+
+        private ILogger<GerenciaInstrutorRepository> _logger;
 
         public async Task<int> GravarInstrutorAsync(Instrutor instrutor)
         {
@@ -36,21 +41,46 @@ namespace Data.Repositories.Instrutores
             }
             catch (Exception ex)
             {
+                _logger.LogError("Erro ao adicionar instrutor: {Mensagem}", ex.Message);
                 throw;
             }
 
         }
         public async Task AtualizarInstrutorAsync(Instrutor instrutor)
         {
-            // Implementar lógica para atualizar um instrutor no banco de dados
+            try
+            {
+                var param = new DynamicParameters();
+                param.Add("Nome", instrutor.Nome, System.Data.DbType.String, System.Data.ParameterDirection.Input);
+                param.Add("Cpf", instrutor.Cpf, System.Data.DbType.String, System.Data.ParameterDirection.Input);
+                param.Add("Email", instrutor.Email, System.Data.DbType.String, System.Data.ParameterDirection.Input);
+                var query = @"
+                            UPDATE INSTRUTORES
+                            SET NOME = @NOME,
+                                CPF = @CPF,
+                                EMAIL = @EMAIL
+                            WHERE ID = @ID;
+                         ";
+                using (var connection = Connection)
+                {
+                    await connection.ExecuteAsync(query, param);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Erro ao atualizar instrutor: {Mensagem}", ex.Message);
+                throw;
+            }
         }
         public async Task RemoverInstrutorAsync(Instrutor instrutor)
         {
-            if (instrutor == null || instrutor.Id == null)
-               throw new ArgumentNullException(nameof(instrutor), "Instrutor ou Id não pode ser nulo.");
+            try
+            {
+                if (instrutor == null || instrutor.Id == null)
+                   throw new ArgumentNullException(nameof(instrutor), "Instrutor ou Id não pode ser nulo.");
 
-            var param = new DynamicParameters();
-            param.Add("Id", instrutor.Id, System.Data.DbType.Guid, System.Data.ParameterDirection.Input);
+                var param = new DynamicParameters();
+                param.Add("Id", instrutor.Id, System.Data.DbType.Guid, System.Data.ParameterDirection.Input);
 
             var query = @"
                               
@@ -78,6 +108,12 @@ namespace Data.Repositories.Instrutores
                         throw;
                     }
                 }
+            }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Erro ao remover instrutor: {Mensagem}", ex.Message);
+                throw;
             }
         }
     }
