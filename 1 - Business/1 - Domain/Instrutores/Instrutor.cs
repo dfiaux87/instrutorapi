@@ -7,13 +7,13 @@ namespace Domain.Instrutores
     {
         public int? Id { get; private set; }
         public string Nome { get; private set; }
-        public Documento Cpf { get; private set; }
-        public Email Email { get; private set; }
+        public string Cpf { get; private set; }
+        public string Email { get; private set; }
         public Telefone Telefone { get; private set; }
 
         public LocaisAtendimento LocaisAtendimento { get; private set; }
 
-        public Instrutor(string nome, Documento cpf, Email email, Telefone telefone, LocaisAtendimento locaisAtendimento)
+        public Instrutor(string nome, string cpf, string email, Telefone telefone, LocaisAtendimento locaisAtendimento)
         {
             Nome = nome;
             Email = email;
@@ -24,7 +24,7 @@ namespace Domain.Instrutores
             InstrutorValidator();
         }
 
-        public Instrutor(string nome, Documento cpf, Email email, Telefone telefone, LocaisAtendimento locaisAtendimento, int id)
+        public Instrutor(string nome, string cpf, string email, Telefone telefone, LocaisAtendimento locaisAtendimento, int id)
         {
             Id = id;
             Nome = nome;
@@ -43,7 +43,15 @@ namespace Domain.Instrutores
             Nome.IsNullEmptyOrWhiteSpace("Nome do instrutor é obrigatório.")
                 .MinLength(3,"Nome deve possuir mais de 3 caracteres")
                 .MaxLength(100, "Nome deve possuir até 100 caracteres");
-            
+
+            Cpf.IsNullEmptyOrWhiteSpace("Número do documento é obrigatório.")
+              .MaxLength(11, "CPF deve possuir até 11 dígitos")
+               .ValidCpf("CPF inválido", true);
+
+            Email.IsNullEmptyOrWhiteSpace("Endereço de email é obrigatório.");
+            Email.MaxLength(100, "Endereço de email deve possuir até 100 caracteres.");
+            Email.ValidEmail("Endereço de email inválido.");
+
         }
     }
 }

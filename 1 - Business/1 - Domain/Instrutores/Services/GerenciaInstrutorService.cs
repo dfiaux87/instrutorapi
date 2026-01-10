@@ -13,6 +13,7 @@ namespace Domain.Instrutores.Services
         private readonly IGerenciaLocaisAtendimentoRepository _locaisAtendimentoRepository;
         private readonly IGerenciaTelefonesRepository _gerenciaTelefonesRepository;
         private readonly IConfiguration _configuration;
+        
 
         public GerenciaInstrutorService(IGerenciaInstrutorRepository gerenciaInstrutorRepository, IConfiguration configuration,
             IGerenciaLocaisAtendimentoRepository locaisAtendimentoRepository, IGerenciaTelefonesRepository gerenciaTelefonesRepository)
@@ -72,6 +73,43 @@ namespace Domain.Instrutores.Services
 
 
         }
+
+        public async Task AtualizarInstrutorAsync(Instrutor instrutor)
+        {
+            if (instrutor == null)
+            {
+                AddNotification("Instrutor", "Instrutor não pode ser nulo.");
+                return;
+            }
+            try
+            {
+                await _gerenciaInstrutorRepository.AtualizarInstrutorAsync(instrutor);
+            }
+            catch (Exception ex)
+            {
+                AddNotification(ex?.Message, "", NotificationType.Error, "", System.Net.HttpStatusCode.InternalServerError);
+                Log.Error(ex?.Message, ex);
+            }
+        }
+
+        public async Task RemoverInstrutorAsync(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                AddNotification("Id", "Id do instrutor não pode ser nulo ou vazio.");
+                return;
+            }
+            try
+            {
+                await _gerenciaInstrutorRepository.RemoverInstrutorAsync(id);
+            }
+            catch (Exception ex)
+            {
+                AddNotification(ex?.Message, "", NotificationType.Error, "", System.Net.HttpStatusCode.InternalServerError);
+                Log.Error(ex?.Message, ex);
+            }
+        }
+
 
     }
 }

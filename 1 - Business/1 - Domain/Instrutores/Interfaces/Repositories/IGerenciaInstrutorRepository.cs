@@ -4,7 +4,7 @@
     {
         Task<int> GravarInstrutorAsync(Instrutor instrutor);
         Task AtualizarInstrutorAsync(Instrutor instrutor);
-        Task RemoverInstrutorAsync(Instrutor instrutor);
+        Task RemoverInstrutorAsync(string id);
          
     }
 }

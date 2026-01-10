@@ -4,10 +4,8 @@ using Application.Instrutores.ViewModels;
 using Domain.Instrutores;
 using Domain.Instrutores.Interfaces.Repositories;
 using Domain.Instrutores.Interfaces.Services;
-using Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
 using Notification;
-using Serilog;
 
 
 namespace Application.Instrutores
@@ -49,15 +47,15 @@ namespace Application.Instrutores
                 var _locaisAtendimento = new LocaisAtendimento(instrutor.LocaisAtendimento.UF, instrutor.LocaisAtendimento.Estado, 
                                                                instrutor.LocaisAtendimento.Cidade, instrutor.LocaisAtendimento.Bairro);
 
-                var _email = new Email(instrutor.Email);
-                if(_email.HasInvalidNotification)
-                    return;
+                //var _email = new Email(instrutor.Email);
+                //if(_email.HasInvalidNotification)
+                //    return;
                 
-                var _documento = new Documento(instrutor.Cpf);
-                if(_documento.HasInvalidNotification)
-                    return;
+                //var _documento = new Documento(instrutor.Cpf);
+                //if(_documento.HasInvalidNotification)
+                //    return;
 
-                var _instrutor = new Instrutor(instrutor.Nome, _documento, _email, _telefone, _locaisAtendimento);
+                var _instrutor = new Instrutor(instrutor.Nome, instrutor.Cpf, instrutor.Email, _telefone, _locaisAtendimento);
 
                 if(_telefone.HasInvalidNotification || _locaisAtendimento.HasInvalidNotification || _instrutor.HasInvalidNotification)
                 {
@@ -78,29 +76,50 @@ namespace Application.Instrutores
             }
         }
 
-        public async Task AtualizarInstrutorAsync(/* Parâmetros necessários */)
+        public async Task AtualizarInstrutorAsync(InstrutorInputModel instrutor)
         {
             try
             {
-                // Lógica para atualizar um instrutor
+                var _telefone = new Telefone(instrutor.Telefone.DDD, instrutor.Telefone.NumeroTelefone, instrutor.Telefone.TipoTelefone);
+                var _locaisAtendimento = new LocaisAtendimento(instrutor.LocaisAtendimento.UF, instrutor.LocaisAtendimento.Estado,
+                                                               instrutor.LocaisAtendimento.Cidade, instrutor.LocaisAtendimento.Bairro);
+
+                if (_telefone.HasInvalidNotification || _locaisAtendimento.HasInvalidNotification)
+                {
+                    _logger.LogWarning("Valores inválidos para prosseguir com a atualização");
+                    return;
+                }
+
+                var _instrutor = new Instrutor(instrutor.Nome, instrutor.Cpf, instrutor.Email, _telefone, _locaisAtendimento);
+
+                if (_instrutor.HasInvalidNotification)
+                {
+                    _logger.LogWarning("Instrutor não válido para prosseguir com a atualização");
+                    return;
+                }
+                _logger.LogInformation($"Iniciando atualização de instrutor: {instrutor.Nome}");
+
+                await _gerenciaInstrutorService.AtualizarInstrutorAsync(_instrutor);
             }
             catch (Exception ex)
             {
                 _logger.LogError("Erro ao atualizar instrutor: {Mensagem}", ex.Message);
-                this.AddNotification("Erro", "Ocorreu um erro ao atualizar o instrutor.");
+                AddNotification("Erro", "Ocorreu um erro ao atualizar o instrutor.");
             }
         }
 
-        public async Task RemoverInstrutorAsync(/* Parâmetros necessários */)
+        public async Task RemoverInstrutorAsync(string id)
         {
             try
             {
-                // Lógica para remover um instrutor
+                _logger.LogInformation($"Iniciando remoção de instrutor com ID: {id}");
+                await _gerenciaInstrutorService.RemoverInstrutorAsync(id);
+
             }
             catch (Exception ex)
             {
                 _logger.LogError("Erro ao remover instrutor: {Mensagem}", ex.Message);
-                this.AddNotification("Erro", "Ocorreu um erro ao remover o instrutor.");
+                AddNotification("Erro", "Ocorreu um erro ao remover o instrutor.");
             }
         }
 

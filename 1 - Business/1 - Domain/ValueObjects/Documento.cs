@@ -17,7 +17,7 @@ namespace Domain.ValueObjects
         {
             NumeroDocumento.IsNullEmptyOrWhiteSpace("Número do documento é obrigatório.")
                 .MaxLength(11, "CPF deve possuir até 11 dígitos")
-                 .ValidCpf("CPF inválido", true); ;
+                 .ValidCpf("CPF inválido", true); 
             // TipoDocumento.IsNullEmptyOrWhiteSpace("Tipo do documento é obrigatório.");
                 
         }

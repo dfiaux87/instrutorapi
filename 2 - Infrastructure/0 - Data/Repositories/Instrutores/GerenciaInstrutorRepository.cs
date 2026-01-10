@@ -11,13 +11,12 @@ namespace Data.Repositories.Instrutores
 {
     public class GerenciaInstrutorRepository : ConnectionBase, IGerenciaInstrutorRepository
     {
+        private ILogger<GerenciaInstrutorRepository> _logger;
         public GerenciaInstrutorRepository(IConfiguration configuration, ILogger<GerenciaInstrutorRepository> logger) 
             : base(configuration)
         {
             _logger = logger;
         }
-
-        private ILogger<GerenciaInstrutorRepository> _logger;
 
         public async Task<int> GravarInstrutorAsync(Instrutor instrutor)
         {
@@ -72,15 +71,15 @@ namespace Data.Repositories.Instrutores
                 throw;
             }
         }
-        public async Task RemoverInstrutorAsync(Instrutor instrutor)
+        public async Task RemoverInstrutorAsync(string id)
         {
             try
             {
-                if (instrutor == null || instrutor.Id == null)
-                   throw new ArgumentNullException(nameof(instrutor), "Instrutor ou Id não pode ser nulo.");
+                if (id == null)
+                   throw new ArgumentNullException( "Instrutor ou Id não pode ser nulo.");
 
                 var param = new DynamicParameters();
-                param.Add("Id", instrutor.Id, System.Data.DbType.Guid, System.Data.ParameterDirection.Input);
+                param.Add("Id", id, System.Data.DbType.Guid, System.Data.ParameterDirection.Input);
 
             var query = @"
                               
